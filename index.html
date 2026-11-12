@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reimbursor Solution Cars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="main">
+  <a class="brand" href="index.html">🚗 Reimbursor Solution Cars</a>
+  <a href="#inventory" class="active">Inventory</a>
+  <a href="#returns">Returns</a>
+</nav>
+
+<div class="promo-bar">
+  Every certified vehicle includes our exclusive Trade-In Return Policy at no additional cost
+</div>
+
+<div class="hero">
+  <h1>Drive Smarter. Return Easier.</h1>
+  <p>Certified pre-owned vehicles backed by our exclusive Trade-In Return Policy</p>
+  <div class="hero-badges">
+    <span class="hero-badge">✓ Certified Pre-Owned</span>
+    <span class="hero-badge">✓ Trade-In Return Policy</span>
+    <span class="hero-badge">✓ Flexible Recovery Options</span>
+  </div>
+</div>
+
+<!-- Inventory -->
+<div class="wrap" id="inventory">
+  <h2 class="section-title">Available Vehicles</h2>
+  <p class="section-sub">All vehicles include our exclusive Trade-In Return Policy at no additional cost.</p>
+  <div class="car-grid" id="car-grid"></div>
+</div>
+
+<!-- Returns -->
+<div class="returns-bg" id="returns">
+  <div class="wrap">
+    <h2 class="section-title">Trade-In Return Center</h2>
+    <p class="section-sub">Enter your Return Policy number to begin the vehicle recovery process.</p>
+
+    <div class="policy-form">
+      <label>
+        Policy Number
+        <input type="text" id="policy-input" placeholder="e.g. RSC-2024-7742" autocomplete="off" spellcheck="false">
+      </label>
+      <button class="btn gold" id="lookup-btn" style="width:auto;white-space:nowrap;padding:10px 24px">Look Up Policy</button>
+    </div>
+    <p class="lookup-error" id="lookup-error"></p>
+
+    <div id="policy-result" hidden></div>
+
+    <div class="dealer-info">
+      <div>
+        <strong>Reimbursor Solution Cars</strong>
+        4820 Westfield Auto Park, Suite 110<br>Austin, TX 78749
+      </div>
+      <div>
+        <strong>Contact</strong>
+        (512) 448-9200<br>Mon–Sat 9am–7pm
+      </div>
+      <div>
+        <strong>Certified Returns Desk</strong>
+        returns@reimbursorsc.com<br>Response within 1 business day
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Reimbursor Solution Cars &nbsp;|&nbsp; 4820 Westfield Auto Park, Suite 110, Austin, TX 78749 &nbsp;|&nbsp; (512) 448-9200</footer>
+
+<!-- Payment dialog -->
+<dialog id="checkout-dialog">
+  <div class="dialog-header">
+    <h2>Early Return Rate — Vehicle Recovery</h2>
+    <p id="dialog-subtitle"></p>
+  </div>
+  <div class="dialog-body">
+    <div class="fee-breakdown">
+      <div class="row strikethrough"><span>Standard recovery rate</span><span id="show-standard-rate"></span></div>
+      <div class="row savings"><span>Early return discount</span><span id="show-savings"></span></div>
+      <div class="row"><span>Taxes &amp; fees (included)</span><span>—</span></div>
+      <div class="row total"><span>Your rate today</span><span id="show-total"></span></div>
+    </div>
+    <form id="pay-form" novalidate autocomplete="off">
+      <label>Name on card
+        <input name="name" type="text" autocomplete="off" maxlength="60" placeholder="Ana Perez">
+        <span class="err" data-for="name"></span>
+      </label>
+      <label>Card number
+        <input name="pan" type="text" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="4242 4242 4242 4242">
+        <span class="err" data-for="pan"></span>
+      </label>
+      <div class="row-2">
+        <label>Expiry
+          <input name="exp" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/YY">
+          <span class="err" data-for="exp"></span>
+        </label>
+        <label>CVV
+          <input name="cvv" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="123">
+          <span class="err" data-for="cvv"></span>
+        </label>
+      </div>
+      <p id="result" class="result" role="status"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" id="cancel-btn">Cancel</button>
+        <button type="submit" class="btn gold" id="pay-btn">Confirm Payment</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
