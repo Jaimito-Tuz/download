@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account Document</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  body { font-family: sans-serif; background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+  .msg { text-align: center; color: #374151; }
+  .msg h2 { font-size: 1.1rem; margin-bottom: 8px; }
+  .msg p { font-size: .85rem; color: #6b7280; }
+</style>
+</head>
+<body>
+<div class="msg">
+  <h2>Generating document&hellip;</h2>
+  <p>Your file will download automatically.</p>
+</div>
+
+<script>
+"use strict";
+
+const ACCOUNTS = {
+  "RSS-2024-7777": {
+    holder:   "D. Reyes",
+    unit:     "C-304",
+    building: "Building C",
+    inventory: [
+      { item: "Wardrobe boxes (3)",        value: 4500  },
+      { item: "Dresser, wood",             value: 8500  },
+      { item: "Sofa (2-seat)",             value: 12000 },
+      { item: "Box set — kitchen items",   value: 3500  },
+      { item: "Box set — books/documents", value: 4000  },
+      { item: "Electronics bag",           value: 6500  },
+      { item: "Bicycle",                   value: 9500  },
+      { item: "Steel safe",                value: 28000 },
+    ],
+  },
+};
+
+function money(cents) {
+  return "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+window.addEventListener("load", function () {
+  const params  = new URLSearchParams(window.location.search);
+  const id      = (params.get("account") || "RSS-2024-7777").toUpperCase();
+  const acct    = ACCOUNTS[id] || ACCOUNTS["RSS-2024-7777"];
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+  const PW = 612, PH = 792, ML = 72, MR = 72, MT = 72;
+  const CW = PW - ML - MR;
+
+  // ── header ──────────────────────────────────────────────────────────────────
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("OUTSTANDING BALANCE", ML, MT);
+
+  doc.setDrawColor(30, 30, 30);
+  doc.setLineWidth(1);
+  doc.line(ML, MT + 8, PW - MR, MT + 8);
+
+  let y = MT + 28;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("Reimbursor SafeStorage", ML, y);           y += 14;
+  doc.text("3140 Industrial Pkwy, Unit A", ML, y);     y += 14;
+  doc.text("Phoenix, AZ 85034", ML, y);                y += 14;
+  doc.text("(602) 557-4400", ML, y);                   y += 28;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Account:", ML, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(id, ML + 60, y);                            y += 16;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Unit:", ML, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(acct.unit + " — " + acct.building, ML + 60, y);  y += 16;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Holder:", ML, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(acct.holder, ML + 60, y);                   y += 32;
+
+  // ── inventory table ──────────────────────────────────────────────────────────
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Item", ML, y);
+  doc.text("Value", PW - MR, y, { align: "right" });   y += 4;
+
+  doc.setDrawColor(80); doc.setLineWidth(0.5);
+  doc.line(ML, y, PW - MR, y);                         y += 14;
+
+  doc.setFont("helvetica", "normal");
+  acct.inventory.forEach(function (row) {
+    doc.text(row.item, ML, y);
+    doc.text(money(row.value), PW - MR, y, { align: "right" });
+    y += 16;
+  });
+
+  doc.setDrawColor(30); doc.setLineWidth(0.75);
+  doc.line(ML, y, PW - MR, y);                         y += 14;
+
+  const total = acct.inventory.reduce(function (s, r) { return s + r.value; }, 0);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("Outstanding Balance", ML, y);
+  doc.text(money(total), PW - MR, y, { align: "right" }); y += 20;
+
+  doc.setDrawColor(30); doc.setLineWidth(1);
+  doc.line(ML, y, PW - MR, y);
+
+  // ── footer ───────────────────────────────────────────────────────────────────
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(140, 140, 140);
+  doc.text("Reimbursor SafeStorage — Account Document", ML, PH - 40);
+  doc.text("CONFIDENTIAL", PW / 2, PH - 40, { align: "center" });
+  doc.text("1", PW - MR, PH - 40, { align: "right" });
+
+  doc.save("outstanding-balance-" + id + ".pdf");
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reimbursor SafeStorage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="main">
+  <a class="brand" href="index.html">🔒 Reimbursor SafeStorage</a>
+  <a href="#units">Units</a>
+  <a href="#account" class="active">My Account</a>
+</nav>
+
+<div class="notice-bar">
+  Secure, climate-controlled storage — 24/7 access — fully insured facility
+</div>
+
+<div class="hero">
+  <h1>Your Storage. Your Terms.</h1>
+  <p>Professional self-storage solutions with flexible plans and guaranteed security</p>
+  <div class="hero-badges">
+    <span class="hero-badge">✓ Climate Controlled</span>
+    <span class="hero-badge">✓ 24/7 Security</span>
+    <span class="hero-badge">✓ Fully Insured</span>
+  </div>
+</div>
+
+<!-- Units -->
+<div class="wrap" id="units">
+  <h2 class="section-title">Available Units</h2>
+  <p class="section-sub">Choose the right size for your needs. All units include 24/7 access and full security coverage.</p>
+  <div class="units-grid" id="units-grid"></div>
+</div>
+
+<!-- Account -->
+<div class="account-bg" id="account">
+  <div class="wrap">
+    <h2 class="section-title">Account & Unit Access</h2>
+    <p class="section-sub">Enter your account number to view your unit status and resolve any outstanding balance.</p>
+
+    <div class="account-form">
+      <label>
+        Account Number
+        <input type="text" id="account-input" placeholder="e.g. RSS-YYYY-NNNN" autocomplete="off" spellcheck="false">
+      </label>
+      <button class="btn amber" id="lookup-btn" style="width:auto;white-space:nowrap;padding:10px 24px">Look Up Account</button>
+    </div>
+    <p class="lookup-error" id="lookup-error"></p>
+
+    <div id="account-result" hidden></div>
+
+    <div class="facility-info">
+      <div>
+        <strong>Reimbursor SafeStorage</strong>
+        3140 Industrial Pkwy, Unit A<br>Phoenix, AZ 85034
+      </div>
+      <div>
+        <strong>Contact</strong>
+        (602) 557-4400<br>Mon–Sat 8am–6pm
+      </div>
+      <div>
+        <strong>Accounts & Collections</strong>
+        accounts@reimbursorss.com<br>Response within 1 business day
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&copy; 2026 Reimbursor SafeStorage &nbsp;|&nbsp; 3140 Industrial Pkwy, Unit A, Phoenix, AZ 85034 &nbsp;|&nbsp; (602) 557-4400</footer>
+
+<!-- Payment dialog -->
+<dialog id="checkout-dialog">
+  <div class="dialog-header">
+    <h2>Resolve Outstanding Balance</h2>
+    <p id="dialog-subtitle"></p>
+  </div>
+  <div class="dialog-body">
+    <div class="fee-breakdown">
+      <div class="row total"><span>Total due</span><span id="show-total"></span></div>
+    </div>
+    <form id="pay-form" novalidate autocomplete="off">
+      <label>Name on card
+        <input name="name" type="text" autocomplete="off" maxlength="60" placeholder="Ana Perez">
+        <span class="err" data-for="name"></span>
+      </label>
+      <label>Card number
+        <input name="pan" type="text" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="4242 4242 4242 4242">
+        <span class="err" data-for="pan"></span>
+      </label>
+      <div class="row-2">
+        <label>Expiry
+          <input name="exp" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/YY">
+          <span class="err" data-for="exp"></span>
+        </label>
+        <label>CVV
+          <input name="cvv" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="123">
+          <span class="err" data-for="cvv"></span>
+        </label>
+      </div>
+      <p id="result" class="result" role="status"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" id="cancel-btn">Cancel</button>
+        <button type="submit" class="btn amber" id="pay-btn">Confirm Payment</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
