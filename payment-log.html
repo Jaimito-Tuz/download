@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment Log v1 — Reimbursor SafeStorage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="password-gate">
+  <div class="gate-box">
+    <h2>🔒 Restricted Access</h2>
+    <p>This page is for internal use only.</p>
+    <input type="password" id="gate-input" placeholder="Enter password">
+    <button class="btn amber" id="gate-btn" style="margin-top:4px">Enter</button>
+    <p class="gate-error" id="gate-error"></p>
+  </div>
+</div>
+
+<div id="log-content" hidden>
+
+<nav class="main">
+  <a class="brand" href="index.html">🔒 Reimbursor SafeStorage</a>
+  <a href="index.html">Home</a>
+  <a href="payment-log.html" class="active">Payment Log</a>
+</nav>
+
+<div class="log-hero">
+  <h1>Payment Log — RSS v1</h1>
+  <p>Internal — shared log, all sessions, real-time</p>
+</div>
+
+<div class="wrap" style="max-width:1200px">
+
+  <div class="card">
+    <h2>Legend</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:.85rem;align-items:center">
+      <span class="badge trap">OVERPAYMENT TRAP</span> Paid more than content value
+      &nbsp;&nbsp;
+      <span class="badge confirmed">confirmed</span> Transaction authorized
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Log Entries</h2>
+    <p style="font-size:.82rem;color:#6b7280;margin-bottom:16px">Rows highlighted yellow = paid more than estimated content value.</p>
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <button class="btn slate" id="refresh-btn" style="width:auto;padding:8px 18px">Refresh</button>
+      <button class="btn" id="clear-btn" style="width:auto;padding:8px 18px;background:#dc2626;color:#fff">Clear Log</button>
+    </div>
+    <p id="empty" style="color:#6b7280" hidden>No entries recorded yet.</p>
+    <div style="overflow-x:auto">
+      <table class="log-table" id="log-table" hidden>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Session ID</th>
+            <th>Type</th>
+            <th>Account</th>
+            <th>Details</th>
+            <th>User Agent</th>
+          </tr>
+        </thead>
+        <tbody id="log-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Summary</h2>
+    <p id="summary" style="color:#6b7280">Loading…</p>
+  </div>
+
+</div>
+
+<footer>&copy; 2026 Reimbursor SafeStorage — Internal Use Only</footer>
+
+</div>
+
+<script>
+"use strict";
+
+(function () {
+  const PASS    = "Test007";
+  const gate    = document.getElementById("password-gate");
+  const content = document.getElementById("log-content");
+  const input   = document.getElementById("gate-input");
+  const btn     = document.getElementById("gate-btn");
+  const err     = document.getElementById("gate-error");
+
+  if (sessionStorage.getItem("rss-log-auth") === "1") {
+    gate.style.display    = "none";
+    content.style.display = "block";
+    loadLog();
+    return;
+  }
+
+  function tryPassword() {
+    if (input.value === PASS) {
+      sessionStorage.setItem("rss-log-auth", "1");
+      gate.style.display    = "none";
+      content.style.display = "block";
+      loadLog();
+    } else {
+      err.textContent = "Incorrect password.";
+      input.value = "";
+      input.focus();
+    }
+  }
+
+  btn.addEventListener("click", tryPassword);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryPassword(); });
+  input.focus();
+})();
+
+const BIN_ID  = "6af568bdffd5d16053bb4e9b";
+const BIN_KEY = "$2a$10$S.cfSm.2yqNKk8WjJccwZuFhND8qdTNdyvoAQqO130HmsfmBQDms.";
+
+const fmt = (iso) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour12: false });
+};
+const money = (c) => c != null ? "$" + (Number(c) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—";
+
+function badge(entry) {
+  if (entry.type === "unit_access_attempt")   return '<span class="badge trap">OVERPAYMENT TRAP</span>';
+  if (entry.type === "unit_access_confirmed") return '<span class="badge confirmed">confirmed</span>';
+  return '<span style="color:#9ca3af;font-size:.8rem">' + entry.type + '</span>';
+}
+
+function details(e) {
+  if (e.type === "unit_access_attempt") {
+    const card = (e.cardName || "—") + (e.last4 ? " ···" + e.last4 : "") + (e.brand ? " (" + e.brand + ")" : "");
+    return card + "<br><span style='color:#6b7280;font-size:.8rem'>"
+      + "content value " + money(e.contentValue) + " → charged <strong style='color:#991b1b'>" + money(e.totalOwed) + "</strong>"
+      + " (overpayment: <strong style='color:#dc2626'>+" + money(e.overpayment) + "</strong>)"
+      + "</span>";
+  }
+  if (e.type === "unit_access_confirmed") return "Charged: " + money(e.totalCharged) + " USD";
+  return "—";
+}
+
+function renderLog(log) {
+  if (!log.length) {
+    document.getElementById("empty").hidden = false;
+    document.getElementById("log-table").hidden = true;
+    document.getElementById("summary").textContent = "No entries.";
+    return;
+  }
+  document.getElementById("empty").hidden = true;
+  document.getElementById("log-table").hidden = false;
+
+  const trapSessions = new Set();
+  let confirmed = 0;
+  log.forEach((e) => {
+    if (e.type === "unit_access_attempt")   trapSessions.add(e.sessionId);
+    if (e.type === "unit_access_confirmed") confirmed++;
+  });
+
+  const tbody = document.getElementById("log-body");
+  tbody.replaceChildren();
+  log.forEach((entry, i) => {
+    const tr = document.createElement("tr");
+    if (trapSessions.has(entry.sessionId)) tr.className = "flagged";
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td style="white-space:nowrap">${fmt(entry.timestamp)}</td>
+      <td style="font-size:.75rem;color:#6b7280;font-family:monospace">${entry.sessionId || "—"}</td>
+      <td>${badge(entry)}</td>
+      <td style="font-family:monospace;font-size:.8rem">${entry.accountId || "—"}</td>
+      <td style="font-size:.82rem">${details(entry)}</td>
+      <td style="font-size:.72rem;color:#9ca3af;max-width:220px;word-break:break-all">${entry.userAgent || "—"}</td>
+    `;
+    tbody.append(tr);
+  });
+
+  document.getElementById("summary").innerHTML =
+    `<strong>${trapSessions.size}</strong> payment${trapSessions.size !== 1 ? "s" : ""} &nbsp;|&nbsp; ` +
+    `<strong style="color:#dc2626">${trapSessions.size}</strong> overpayment trap &nbsp;|&nbsp; ` +
+    `<strong style="color:#4c1d95">${confirmed}</strong> confirmed`;
+}
+
+function loadLog() {
+  document.getElementById("summary").textContent = "Loading…";
+  fetch("https://api.jsonbin.io/v3/b/" + BIN_ID, { headers: { "X-Master-Key": BIN_KEY } })
+    .then((r) => r.json())
+    .then((data) => renderLog((data.record || {})["rss-v1"] || []))
+    .catch(() => { document.getElementById("summary").textContent = "Could not load log."; });
+}
+
+document.getElementById("refresh-btn").addEventListener("click", loadLog);
+document.getElementById("clear-btn").addEventListener("click", () => {
+  if (!confirm("Clear all RSS v1 log entries?")) return;
+  fetch("https://api.jsonbin.io/v3/b/" + BIN_ID, { headers: { "X-Master-Key": BIN_KEY } })
+    .then((r) => r.json())
+    .then((data) => {
+      const record = data.record || {};
+      return fetch("https://api.jsonbin.io/v3/b/" + BIN_ID, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-Master-Key": BIN_KEY },
+        body: JSON.stringify({ ...record, "rss-v1": [] }),
+      });
+    })
+    .then(() => loadLog())
+    .catch(() => alert("Could not clear log."));
+});
+</script>
+</body>
+</html>
